@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>역사 골든벨</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --bg: #f6f3ec; --surface: #ffffff; --surface-2: #f1ede3;
+    --text: #1f1c17; --muted: #6d675b; --line: #e4ded1;
+    --accent: #e0a100; --accent-strong: #c48a00; --accent-ink: #2e2200; --accent-soft: #fbf0cf;
+    --good: #1c8f4e; --good-soft: #e3f5ea; --bad: #cf3d3d; --bad-soft: #fce8e8;
+    --shadow: 0 1px 2px rgba(40,30,0,.06), 0 6px 20px rgba(40,30,0,.06);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14130f; --surface: #1f1d18; --surface-2: #29261f;
+      --text: #f2eee4; --muted: #a49e90; --line: #36332b;
+      --accent: #f2b818; --accent-strong: #ffc93a; --accent-ink: #231a00; --accent-soft: #3a3010;
+      --good: #4cc47f; --good-soft: #15301f; --bad: #ff6b6b; --bad-soft: #3a1b1b;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:disabled { cursor: default; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 140px; }
+  [hidden] { display: none !important; }
+
+  /* ── 홈 ── */
+  .brand { display: flex; align-items: center; gap: 12px; margin: 8px 0 20px; }
+  .bell { width: 48px; height: 48px; flex: none; }
+  .brand h1 { font-size: 26px; margin: 0; letter-spacing: -0.02em; }
+  .brand p { margin: 0; color: var(--muted); font-size: 14px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+  .stat { background: var(--surface); border-radius: 14px; padding: 14px 12px; box-shadow: var(--shadow); }
+  .stat b { display: block; font-size: 24px; letter-spacing: -0.02em; }
+  .stat span { font-size: 13px; color: var(--muted); }
+  .panel { background: var(--surface); border-radius: 18px; padding: 18px 16px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .panel h2 { font-size: 15px; margin: 0 0 12px; display: flex; justify-content: space-between; align-items: baseline; }
+  .panel h2 small { font-weight: 500; color: var(--muted); font-size: 13px; }
+  .units { display: flex; flex-direction: column; gap: 6px; }
+  .unit {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    border: 1.5px solid var(--line); background: transparent; border-radius: 12px; padding: 10px 12px;
+  }
+  .unit .chk { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--line); flex: none; display: grid; place-items: center; }
+  .unit[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .unit[aria-pressed="true"] .chk { background: var(--accent); border-color: var(--accent); }
+  .unit[aria-pressed="true"] .chk::after { content: ""; width: 10px; height: 6px; border: 2.5px solid var(--accent-ink); border-top: 0; border-right: 0; transform: rotate(-45deg) translate(1px,-1px); }
+  .unit .nm { flex: 1; min-width: 0; font-size: 15px; }
+  .unit .nm em { font-style: normal; color: var(--muted); font-size: 13px; margin-right: 6px; }
+  .unit .ct { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .seg { display: flex; background: var(--surface-2); border-radius: 12px; padding: 4px; gap: 4px; }
+  .seg button { flex: 1; border: 0; background: transparent; padding: 9px 4px; border-radius: 9px; font-size: 15px; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 700; box-shadow: var(--shadow); }
+  .row-label { font-size: 14px; color: var(--muted); margin: 14px 0 8px; }
+  .row-label:first-child { margin-top: 0; }
+  .btn {
+    display: block; width: 100%; border: 0; border-radius: 14px; padding: 16px; font-size: 17px; font-weight: 700;
+    background: var(--accent); color: var(--accent-ink); box-shadow: 0 3px 0 var(--accent-strong);
+    transition: transform .06s;
+  }
+  .btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--accent-strong); }
+  .btn:disabled { opacity: .45; }
+  .btn.ghost { background: var(--surface); color: var(--text); box-shadow: 0 0 0 1.5px var(--line) inset; }
+  .btn + .btn { margin-top: 10px; }
+  .link { background: none; border: 0; color: var(--muted); font-size: 13px; text-decoration: underline; padding: 8px; display: block; margin: 16px auto 0; }
+  .notice { font-size: 13px; color: var(--muted); background: var(--surface-2); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; }
+
+  /* ── 퀴즈 ── */
+  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .icon-btn { width: 36px; height: 36px; border: 0; background: transparent; border-radius: 10px; display: grid; place-items: center; color: var(--muted); flex: none; }
+  .icon-btn:hover { background: var(--surface-2); }
+  .bar { flex: 1; height: 12px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .35s ease; }
+  .counter { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 48px; text-align: right; }
+  .card { background: var(--surface); border-radius: 22px; padding: 22px 20px; box-shadow: var(--shadow); margin-bottom: 16px; animation: pop .25s ease; }
+  @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tag { font-size: 12px; padding: 3px 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); }
+  .tag.retry { background: var(--bad-soft); color: var(--bad); font-weight: 600; }
+  .tag.type { background: var(--accent-soft); color: var(--text); }
+  .q { font-size: 20px; font-weight: 700; line-height: 1.5; letter-spacing: -0.01em; margin: 0; word-break: keep-all; }
+  .timer { height: 4px; background: var(--surface-2); border-radius: 99px; margin-top: 18px; overflow: hidden; }
+  .timer i { display: block; height: 100%; background: var(--accent); width: 100%; }
+  .timer.low i { background: var(--bad); }
+
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 14px; font-size: 17px;
+    box-shadow: 0 2px 0 var(--line); transition: transform .06s, border-color .15s;
+  }
+  .choice:hover:not(:disabled) { border-color: var(--accent); }
+  .choice:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+  .choice .no { width: 28px; height: 28px; border-radius: 8px; background: var(--surface-2); display: grid; place-items: center; font-size: 14px; font-weight: 700; color: var(--muted); flex: none; }
+  .choice.correct { border-color: var(--good); background: var(--good-soft); box-shadow: 0 2px 0 var(--good); }
+  .choice.correct .no { background: var(--good); color: #fff; }
+  .choice.wrong { border-color: var(--bad); background: var(--bad-soft); box-shadow: 0 2px 0 var(--bad); }
+  .choice.wrong .no { background: var(--bad); color: #fff; }
+  .choice.dim { opacity: .5; }
+  .ox { flex-direction: row; }
+  .ox .choice { flex-direction: column; justify-content: center; padding: 22px 8px; font-size: 44px; font-weight: 800; line-height: 1; }
+  .ox .choice small { font-size: 13px; font-weight: 500; color: var(--muted); }
+
+  .short input {
+    width: 100%; font: inherit; font-size: 20px; padding: 14px 16px; border-radius: 14px;
+    border: 2px solid var(--line); background: var(--surface); color: var(--text); outline: none;
+  }
+  .short input:focus { border-color: var(--accent); }
+  .short input.correct { border-color: var(--good); background: var(--good-soft); }
+  .short input.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .short .actions { display: flex; gap: 8px; margin-top: 10px; }
+  .short .actions .btn { margin: 0; }
+  .short .actions .btn.ghost { flex: 0 0 38%; font-size: 15px; }
+
+  /* ── 피드백 시트 ── */
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    transform: translateY(105%); transition: transform .25s ease;
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+    border-radius: 22px 22px 0 0; box-shadow: 0 -8px 30px rgba(0,0,0,.12);
+  }
+  .sheet.show { transform: none; }
+  .sheet.good { background: var(--good-soft); }
+  .sheet.bad { background: var(--bad-soft); }
+  .sheet .in { max-width: 560px; margin: 0 auto; }
+  .sheet h3 { margin: 0 0 6px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+  .sheet.good h3 { color: var(--good); }
+  .sheet.bad h3 { color: var(--bad); }
+  .sheet .ans { font-size: 16px; font-weight: 700; margin: 0 0 4px; }
+  .sheet .exp { font-size: 15px; color: var(--text); margin: 0 0 6px; word-break: keep-all; }
+  .sheet .again { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+  .sheet.good .btn { background: var(--good); color: #fff; box-shadow: 0 3px 0 color-mix(in srgb, var(--good) 70%, #000); }
+  .sheet.bad .btn { background: var(--bad); color: #fff; box-shadow: 0 3px 0 color-mix(in srgb, var(--bad) 70%, #000); }
+  .sheet { max-height: 80dvh; overflow-y: auto; }
+  .notes { list-style: none; margin: 4px 0 12px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .notes li { display: flex; gap: 10px; align-items: flex-start; background: var(--surface); border-radius: 12px; padding: 10px 12px; }
+  .notes .mk { width: 22px; height: 22px; border-radius: 7px; flex: none; display: grid; place-items: center; font-size: 12px; font-weight: 800; background: var(--surface-2); color: var(--muted); margin-top: 1px; }
+  .notes li.ans .mk { background: var(--good); color: #fff; }
+  .notes li.pick .mk { background: var(--bad); color: #fff; }
+  .notes .nt { min-width: 0; font-size: 14px; color: var(--muted); word-break: keep-all; }
+  .notes .nt b { display: block; font-size: 15px; color: var(--text); }
+  .notes li.ans .nt b { color: var(--good); }
+  .notes li.pick .nt b { color: var(--bad); }
+  .sheet .override { background: none; border: 0; padding: 0 0 12px; color: var(--muted); font-size: 13px; text-decoration: underline; }
+
+  /* ── 결과 ── */
+  .result-head { text-align: center; padding: 24px 0 8px; }
+  .result-head .big { font-size: 56px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+  .result-head p { color: var(--muted); margin: 6px 0 0; }
+  .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 20px 0; }
+  .miss { list-style: none; margin: 0; padding: 0; }
+  .miss li { padding: 12px 0; border-top: 1px solid var(--line); }
+  .miss li:first-child { border-top: 0; padding-top: 0; }
+  .miss .mq { font-size: 15px; margin: 0 0 4px; word-break: keep-all; }
+  .miss .ma { font-size: 14px; color: var(--good); font-weight: 700; margin: 0; }
+  .empty { color: var(--muted); font-size: 14px; margin: 0; }
+  kbd { font: inherit; font-size: 12px; padding: 1px 6px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line); }
+  .hint-keys { text-align: center; font-size: 12px; color: var(--muted); margin-top: 14px; }
+  @media (hover: none) { .hint-keys { display: none; } }
+</style>
+</head>
+<body>
+
+<!-- 홈 -->
+<main id="home" class="wrap">
+  <div class="brand">
+    <svg class="bell" viewBox="0 0 48 48" aria-hidden="true">
+      <circle cx="24" cy="24" r="24" fill="var(--accent-soft)"/>
+      <path d="M24 11c-6 0-9.5 4.6-9.5 10.2v6.3L12 31.5h24l-2.5-4V21.2C33.5 15.6 30 11 24 11z" fill="var(--accent)"/>
+      <circle cx="24" cy="35" r="3" fill="var(--accent-strong)"/>
+      <rect x="22.5" y="8" width="3" height="4" rx="1.5" fill="var(--accent-strong)"/>
+    </svg>
+    <div>
+      <h1 id="appTitle">역사 골든벨</h1>
+      <p id="appSub"></p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="stTotal">0</b><span>전체 문제</span></div>
+    <div class="stat"><b id="stMastered">0</b><span>익힌 문제</span></div>
+    <div class="stat"><b id="stWrong">0</b><span>오답 노트</span></div>
+  </div>
+
+  <div id="sampleNotice" class="notice" hidden>지금은 화면 확인용 <b>예시 문제</b>가 들어 있어요. 교과서 문제를 넣으면 바뀝니다.</div>
+
+  <section class="panel">
+    <h2>단원 고르기 <small id="unitSummary"></small></h2>
+    <div id="units" class="units"></div>
+  </section>
+
+  <section class="panel">
+    <div class="row-label">한 번에 풀 문제 수</div>
+    <div id="countSeg" class="seg">
+      <button data-v="10">10</button><button data-v="20">20</button><button data-v="30">30</button><button data-v="0">전부</button>
+    </div>
+    <div class="row-label">제한 시간 (골든벨 연습)</div>
+    <div id="timerSeg" class="seg">
+      <button data-v="0">없음</button><button data-v="30">30초</button><button data-v="15">15초</button><button data-v="10">10초</button>
+    </div>
+  </section>
+
+  <button id="startBtn" class="btn">학습 시작</button>
+  <button id="reviewBtn" class="btn ghost">오답 노트 복습</button>
+  <button id="resetBtn" class="link">학습 기록 지우기</button>
+</main>
+
+<!-- 퀴즈 -->
+<main id="quiz" class="wrap" style="padding-bottom:280px" hidden>
+  <div class="topbar">
+    <button id="quitBtn" class="icon-btn" aria-label="그만하기">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="bar"><i id="barFill"></i></div>
+    <div id="counter" class="counter">0/0</div>
+  </div>
+  <div id="card" class="card">
+    <div id="tags" class="tags"></div>
+    <p id="qText" class="q"></p>
+    <div id="timer" class="timer" hidden><i id="timerFill"></i></div>
+  </div>
+  <div id="answerArea"></div>
+  <div id="keyHint" class="hint-keys"></div>
+</main>
+
+<!-- 결과 -->
+<main id="result" class="wrap" hidden>
+  <div class="result-head">
+    <div class="big" id="rScore">0%</div>
+    <p id="rMsg"></p>
+  </div>
+  <div class="result-grid">
+    <div class="stat"><b id="rFirst">0</b><span>한 번에 맞힘</span></div>
+    <div class="stat"><b id="rRetry">0</b><span>다시 풀어 맞힘</span></div>
+    <div class="stat"><b id="rTotal">0</b><span>푼 문제</span></div>
+  </div>
+  <section class="panel">
+    <h2>이번에 틀렸던 문제</h2>
+    <ul id="missList" class="miss"></ul>
+  </section>
+  <button id="againBtn" class="btn">틀린 문제만 다시 풀기</button>
+  <button id="homeBtn" class="btn ghost">처음으로</button>
+</main>
+
+<!-- 피드백 -->
+<div id="sheet" class="sheet" role="status" aria-live="polite">
+  <div class="in">
+    <h3 id="fbTitle"></h3>
+    <p id="fbAnswer" class="ans"></p>
+    <p id="fbExplain" class="exp"></p>
+    <ul id="fbNotes" class="notes" hidden></ul>
+    <p id="fbAgain" class="again"></p>
+    <button id="fbOverride" class="override" hidden>제 답도 맞아요 (정답으로 처리)</button>
+    <button id="fbNext" class="btn">계속</button>
+  </div>
+</div>
+
+<script src="questions.js"></script>
+<script>
+(() => {
+  const BANK = window.QUESTION_BANK || { units: [], questions: [] };
+  const Q = BANK.questions;
+  const QMAP = Object.fromEntries(Q.map(q => [q.id, q]));
+  const UNIT = Object.fromEntries(BANK.units.map(u => [u.id, u]));
+  const TYPE_LABEL = { mc: "객관식", ox: "O / X", short: "주관식" };
+  const MASTER_LEVEL = 3;          // 이 단계 이상이면 '익힌 문제'
+  const CLEAR_WRONG_LEVEL = 2;     // 이 단계가 되면 오답 노트에서 빠짐
+  const $ = id => document.getElementById(id);
+
+  // ── 저장소 (실패해도 동작) ──
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+  let progress = store.get("hgb.progress.v1", {});   // id -> {seen, ok, ng, level, wrongNote, last}
+  let settings = Object.assign({ units: BANK.units.map(u => u.id), count: 20, timer: 0 }, store.get("hgb.settings.v1", {}));
+  settings.units = settings.units.filter(id => UNIT[id]);
+  if (!settings.units.length) settings.units = BANK.units.map(u => u.id);
+  const saveProgress = () => store.set("hgb.progress.v1", progress);
+  const saveSettings = () => store.set("hgb.settings.v1", settings);
+  const P = id => progress[id] || (progress[id] = { seen: 0, ok: 0, ng: 0, level: 0, wrongNote: false, last: 0 });
+
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const norm = s => String(s).toLowerCase().replace(/[\s·.,ㆍ・\-_'"「」『』()]/g, "");
+  const show = name => { for (const s of ["home", "quiz", "result"]) $(s).hidden = s !== name; window.scrollTo(0, 0); };
+
+  // ── 홈 ──
+  function renderHome() {
+    $("appTitle").textContent = BANK.title || "역사 골든벨";
+    $("appSub").textContent = BANK.subtitle || "";
+    $("sampleNotice").hidden = !Q.some(q => q.sample);
+    $("stTotal").textContent = Q.length;
+    $("stMastered").textContent = Q.filter(q => progress[q.id]?.level >= MASTER_LEVEL).length;
+    const wrongCount = Q.filter(q => progress[q.id]?.wrongNote).length;
+    $("stWrong").textContent = wrongCount;
+    $("reviewBtn").disabled = wrongCount === 0;
+    $("reviewBtn").textContent = wrongCount ? `오답 노트 복습 (${wrongCount})` : "오답 노트 복습";
+
+    const box = $("units"); box.textContent = "";
+    for (const u of BANK.units) {
+      const qs = Q.filter(q => q.unit === u.id);
+      const done = qs.filter(q => progress[q.id]?.level >= MASTER_LEVEL).length;
+      const b = document.createElement("button");
+      b.className = "unit"; b.setAttribute("aria-pressed", settings.units.includes(u.id));
+      b.innerHTML = `<span class="chk"></span><span class="nm"><em></em></span><span class="ct"></span>`;
+      b.querySelector("em").textContent = u.id;
+      b.querySelector(".nm").append(u.name);
+      b.querySelector(".ct").textContent = qs.length ? `${done}/${qs.length}` : "문제 없음";
+      b.onclick = () => {
+        settings.units = settings.units.includes(u.id) ? settings.units.filter(x => x !== u.id) : [...settings.units, u.id];
+        saveSettings(); renderHome();
+      };
+      box.append(b);
+    }
+    const all = settings.units.length === BANK.units.length;
+    $("unitSummary").innerHTML = "";
+    const tgl = document.createElement("button");
+    tgl.className = "link"; tgl.style.cssText = "margin:0;padding:0";
+    tgl.textContent = all ? "모두 해제" : "모두 선택";
+    tgl.onclick = () => { settings.units = all ? [] : BANK.units.map(u => u.id); saveSettings(); renderHome(); };
+    $("unitSummary").append(tgl);
+
+    for (const [segId, key] of [["countSeg", "count"], ["timerSeg", "timer"]]) {
+      for (const b of $(segId).children) {
+        b.setAttribute("aria-pressed", Number(b.dataset.v) === settings[key]);
+        b.onclick = () => { settings[key] = Number(b.dataset.v); saveSettings(); renderHome(); };
+      }
+    }
+    $("startBtn").disabled = pool().length === 0;
+  }
+  const pool = () => Q.filter(q => settings.units.includes(q.unit));
+
+  // 출제 순서: 오답 노트 → 처음 보는 문제 → 덜 익힌 문제 → 오래전에 본 문제
+  function pickQuestions(list, n) {
+    const scored = shuffle([...list]).map(q => {
+      const p = progress[q.id];
+      let score = !p ? 1 : p.wrongNote ? 0 : 2 + p.level;
+      return { q, score, last: p?.last || 0 };
+    });
+    scored.sort((a, b) => a.score - b.score || a.last - b.last);
+    const chosen = scored.slice(0, n > 0 ? n : scored.length).map(x => x.q);
+    return shuffle(chosen);
+  }
+
+  // ── 세션 ──
+  let S = null;
+  function startSession(questions) {
+    if (!questions.length) return;
+    S = { queue: [...questions], total: questions.length, cleared: new Set(), first: {}, missed: new Set(), cur: null, done: false, verdict: null };
+    show("quiz");
+    nextQuestion();
+  }
+
+  function nextQuestion() {
+    hideSheet();
+    stopTimer();
+    if (!S.queue.length) return finish();
+    S.cur = S.queue.shift();
+    S.done = false;
+    renderQuestion();
+  }
+
+  function updateBar() {
+    $("barFill").style.width = (S.cleared.size / S.total * 100) + "%";
+    $("counter").textContent = `${S.cleared.size}/${S.total}`;
+  }
+
+  function renderQuestion() {
+    const q = S.cur;
+    updateBar();
+    const card = $("card");
+    card.style.animation = "none"; void card.offsetWidth; card.style.animation = "";
+    const tags = $("tags"); tags.textContent = "";
+    const addTag = (t, cls) => { const s = document.createElement("span"); s.className = "tag " + (cls || ""); s.textContent = t; tags.append(s); };
+    addTag(TYPE_LABEL[q.type] || "", "type");
+    if (UNIT[q.unit]) addTag(`${q.unit} ${UNIT[q.unit].name}`);
+    if (q.page) addTag(`교과서 ${q.page}쪽`);
+    if (S.missed.has(q.id)) addTag("다시 도전", "retry");
+    $("qText").textContent = q.q;
+
+    const area = $("answerArea"); area.textContent = "";
+    if (q.type === "mc") {
+      const order = shuffle(q.choices.map((c, i) => i));
+      S.order = order; S.picked = null;
+      const wrap = document.createElement("div"); wrap.className = "choices";
+      order.forEach((ci, k) => {
+        const b = document.createElement("button");
+        b.className = "choice"; b.dataset.ci = ci;
+        b.innerHTML = `<span class="no">${k + 1}</span><span></span>`;
+        b.lastChild.textContent = q.choices[ci];
+        b.onclick = () => answerChoice(b, ci === q.answer);
+        wrap.append(b);
+      });
+      area.append(wrap);
+      $("keyHint").innerHTML = "<kbd>1</kbd>~<kbd>4</kbd> 로 고르기";
+    } else if (q.type === "ox") {
+      const wrap = document.createElement("div"); wrap.className = "choices ox";
+      for (const [val, label, sub] of [[true, "O", "맞아요"], [false, "X", "틀려요"]]) {
+        const b = document.createElement("button");
+        b.className = "choice"; b.dataset.val = val;
+        b.style.color = val ? "var(--good)" : "var(--bad)";
+        b.innerHTML = `${label}<small>${sub}</small>`;
+        b.onclick = () => answerChoice(b, val === q.answer);
+        wrap.append(b);
+      }
+      area.append(wrap);
+      $("keyHint").innerHTML = "<kbd>O</kbd> / <kbd>X</kbd> 키로 고르기";
+    } else {
+      const wrap = document.createElement("div"); wrap.className = "short";
+      wrap.innerHTML = `<input id="shortInput" type="text" autocomplete="off" placeholder="정답을 써 보세요" enterkeyhint="done">
+        <div class="actions"><button class="btn ghost" id="idkBtn">모르겠어요</button><button class="btn" id="submitBtn">확인</button></div>`;
+      area.append(wrap);
+      const inp = $("shortInput");
+      $("submitBtn").onclick = () => answerShort(inp.value);
+      $("idkBtn").onclick = () => answerShort("");
+      inp.onkeydown = e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); e.stopPropagation(); answerShort(inp.value); } };
+      setTimeout(() => inp.focus(), 50);
+      $("keyHint").innerHTML = "<kbd>Enter</kbd> 로 확인";
+    }
+    startTimer();
+  }
+
+  function answerChoice(btn, correct) {
+    if (S.done) return;
+    const q = S.cur;
+    if (btn && q.type === "mc") S.picked = Number(btn.dataset.ci);
+    for (const b of $("answerArea").querySelectorAll(".choice")) {
+      b.disabled = true;
+      const isAns = q.type === "mc" ? Number(b.dataset.ci) === q.answer : (b.dataset.val === "true") === q.answer;
+      if (isAns) b.classList.add("correct");
+      else if (b === btn) b.classList.add("wrong");
+      else b.classList.add("dim");
+    }
+    grade(correct);
+  }
+
+  function answerShort(value) {
+    if (S.done) return;
+    const q = S.cur;
+    const v = norm(value);
+    const correct = v.length > 0 && q.answer.some(a => norm(a) === v);
+    const inp = $("shortInput");
+    if (inp) { inp.disabled = true; inp.classList.add(correct ? "correct" : "wrong"); }
+    for (const b of $("answerArea").querySelectorAll("button")) b.disabled = true;
+    grade(correct, value.trim() !== "");
+  }
+
+  function grade(correct, canOverride = false) {
+    S.done = true;
+    stopTimer();
+    S.verdict = correct;
+    showSheet(correct, canOverride);
+  }
+
+  function answerText(q) {
+    if (q.type === "mc") return q.choices[q.answer];
+    if (q.type === "ox") return q.answer ? "O" : "X";
+    return q.answer[0];
+  }
+
+  // 정답 확정은 '계속'을 누를 때 기록 (주관식에서 '정답으로 처리' 가능)
+  function commit() {
+    const q = S.cur, correct = S.verdict, p = P(q.id);
+    if (!(q.id in S.first)) S.first[q.id] = correct;
+    p.seen++; p.last = Date.now();
+    if (correct) {
+      p.ok++;
+      p.level = Math.min(p.level + 1, 5);
+      if (p.level >= CLEAR_WRONG_LEVEL) p.wrongNote = false;
+      S.cleared.add(q.id);
+    } else {
+      p.ng++;
+      p.level = 0;
+      p.wrongNote = true;
+      S.missed.add(q.id);
+      // 3~5문제 뒤에 다시 출제 (남은 문제가 적으면 맨 뒤로)
+      const gap = 3 + Math.floor(Math.random() * 3);
+      S.queue.splice(Math.min(gap, S.queue.length), 0, q);
+    }
+    saveProgress();
+  }
+
+  const PRAISE = ["정답이에요!", "잘했어요!", "맞았어요!", "훌륭해요!", "바로 그거예요!"];
+  function showSheet(correct, canOverride) {
+    const q = S.cur, sh = $("sheet");
+    sh.className = "sheet show " + (correct ? "good" : "bad");
+    $("fbTitle").textContent = correct ? PRAISE[Math.floor(Math.random() * PRAISE.length)] : (S.timedOut ? "시간이 끝났어요" : "아쉬워요");
+    $("fbAnswer").textContent = correct && q.type !== "short" ? "" : "정답: " + answerText(q) + (q.type === "short" && q.answer.length > 1 ? `  (${q.answer.slice(1).join(", ")}도 정답)` : "");
+    $("fbAnswer").hidden = !$("fbAnswer").textContent;
+    $("fbExplain").textContent = q.explain || "";
+    renderNotes(q);
+    $("fbAgain").textContent = correct ? "" : "이 문제는 잠시 뒤에 다시 나와요.";
+    $("fbAgain").hidden = correct;
+    $("fbOverride").hidden = correct || !canOverride;
+    $("fbNext").textContent = "계속";
+    S.timedOut = false;
+    setTimeout(() => $("fbNext").focus(), 30);
+  }
+  function hideSheet() { $("sheet").className = "sheet"; }
+
+  // 보기별 설명: 화면에 나온 보기 순서(번호) 그대로, 정답 ✓ / 내가 고른 오답 ✗
+  function renderNotes(q) {
+    const ul = $("fbNotes"); ul.textContent = "";
+    const has = q.type === "mc" && Array.isArray(q.notes) && q.notes.some(Boolean);
+    ul.hidden = !has;
+    if (!has) return;
+    (S.order || q.choices.map((c, i) => i)).forEach((ci, k) => {
+      const li = document.createElement("li");
+      const isAns = ci === q.answer, isPick = ci === S.picked && !isAns;
+      if (isAns) li.className = "ans"; else if (isPick) li.className = "pick";
+      li.innerHTML = `<span class="mk"></span><span class="nt"><b></b></span>`;
+      li.querySelector(".mk").textContent = isAns ? "✓" : isPick ? "✗" : k + 1;
+      li.querySelector("b").textContent = q.choices[ci];
+      li.querySelector(".nt").append(q.notes[ci] || "");
+      ul.append(li);
+    });
+    $("sheet").scrollTop = 0;
+  }
+
+  $("fbNext").onclick = () => { if (S && S.done) { commit(); nextQuestion(); } };
+  $("fbOverride").onclick = () => {
+    S.verdict = true;
+    const inp = $("shortInput"); if (inp) { inp.classList.remove("wrong"); inp.classList.add("correct"); }
+    showSheet(true, false);
+  };
+
+  // ── 제한 시간 ──
+  let timerRAF = 0, timerEnd = 0;
+  function startTimer() {
+    const sec = settings.timer;
+    $("timer").hidden = !sec;
+    if (!sec) return;
+    timerEnd = performance.now() + sec * 1000;
+    const tick = now => {
+      const left = Math.max(0, timerEnd - now);
+      $("timerFill").style.width = (left / (sec * 1000) * 100) + "%";
+      $("timer").classList.toggle("low", left < 4000);
+      if (left <= 0) { S.timedOut = true; timeUp(); return; }
+      timerRAF = requestAnimationFrame(tick);
+    };
+    timerRAF = requestAnimationFrame(tick);
+  }
+  function stopTimer() { cancelAnimationFrame(timerRAF); }
+  function timeUp() {
+    if (S.done) return;
+    if (S.cur.type === "short") answerShort("");
+    else answerChoice(null, false);
+  }
+
+  // ── 결과 ──
+  function finish() {
+    stopTimer();
+    show("result");
+    const ids = Object.keys(S.first);
+    const firstOk = ids.filter(id => S.first[id]).length;
+    const pct = ids.length ? Math.round(firstOk / ids.length * 100) : 0;
+    $("rScore").textContent = pct + "%";
+    $("rMsg").textContent = pct === 100 ? "완벽해요! 골든벨을 울릴 수 있겠어요 🔔" :
+      pct >= 80 ? "아주 잘했어요! 조금만 더 하면 완벽해요." :
+      pct >= 50 ? "좋아요! 틀린 문제를 한 번 더 봐요." : "괜찮아요. 반복하면 금방 외워져요!";
+    $("rFirst").textContent = firstOk;
+    $("rRetry").textContent = S.missed.size;
+    $("rTotal").textContent = ids.length;
+    const list = $("missList"); list.textContent = "";
+    if (!S.missed.size) {
+      const p = document.createElement("p"); p.className = "empty"; p.textContent = "틀린 문제가 없어요!"; list.append(p);
+    }
+    for (const id of S.missed) {
+      const q = QMAP[id];
+      const li = document.createElement("li");
+      li.innerHTML = `<p class="mq"></p><p class="ma"></p>`;
+      li.firstChild.textContent = q.q;
+      li.lastChild.textContent = "정답: " + answerText(q);
+      list.append(li);
+    }
+    $("againBtn").hidden = !S.missed.size;
+  }
+
+  // ── 버튼 ──
+  $("startBtn").onclick = () => startSession(pickQuestions(pool(), settings.count));
+  $("reviewBtn").onclick = () => startSession(shuffle(Q.filter(q => progress[q.id]?.wrongNote)));
+  $("againBtn").onclick = () => startSession(shuffle([...S.missed].map(id => QMAP[id])));
+  $("homeBtn").onclick = () => { S = null; show("home"); renderHome(); };
+  $("quitBtn").onclick = () => {
+    if (S.cleared.size === 0 || confirm("그만할까요? 지금까지 푼 기록은 저장돼요.")) {
+      stopTimer(); hideSheet(); S = null; show("home"); renderHome();
+    }
+  };
+  $("resetBtn").onclick = () => {
+    if (confirm("학습 기록(익힌 문제, 오답 노트)을 모두 지울까요?")) { progress = {}; saveProgress(); renderHome(); }
+  };
+
+  // ── 키보드 ──
+  document.addEventListener("keydown", e => {
+    if (!S || $("quiz").hidden || e.isComposing) return;
+    if (S.done) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("fbNext").click(); }
+      return;
+    }
+    const btns = [...$("answerArea").querySelectorAll(".choice")];
+    if (!btns.length) return;
+    if (S.cur.type === "mc" && /^[1-9]$/.test(e.key)) btns[Number(e.key) - 1]?.click();
+    if (S.cur.type === "ox") {
+      const k = e.key.toLowerCase();
+      if (k === "o" || k === "ㅐ" || k === "1") btns[0].click();
+      if (k === "x" || k === "ㅌ" || k === "2") btns[1].click();
+    }
+  });
+
+  renderHome();
+})();
+</script>
+</body>
+</html>
