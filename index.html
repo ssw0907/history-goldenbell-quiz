@@ -218,7 +218,7 @@
   <section class="panel">
     <div class="row-label">한 번에 풀 문제 수</div>
     <div id="countSeg" class="seg">
-      <button data-v="10">10</button><button data-v="20">20</button><button data-v="30">30</button><button data-v="0">전부</button>
+      <button data-v="30">30</button><button data-v="50">50</button><button data-v="70">70</button><button data-v="0">전부</button>
     </div>
     <div class="row-label">제한 시간 (골든벨 연습)</div>
     <div id="timerSeg" class="seg">
@@ -300,7 +300,8 @@
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
   };
   let progress = store.get("hgb.progress.v1", {});   // id -> {seen, ok, ng, level, wrongNote, last}
-  let settings = Object.assign({ units: BANK.units.map(u => u.id), count: 20, timer: 0 }, store.get("hgb.settings.v1", {}));
+  let settings = Object.assign({ units: BANK.units.map(u => u.id), count: 30, timer: 0 }, store.get("hgb.settings.v1", {}));
+  if (![30, 50, 70, 0].includes(settings.count)) settings.count = 30;   // 예전 선택값(10, 20)은 30으로
   settings.units = settings.units.filter(id => UNIT[id]);
   if (!settings.units.length) settings.units = BANK.units.map(u => u.id);
   const saveProgress = () => store.set("hgb.progress.v1", progress);
