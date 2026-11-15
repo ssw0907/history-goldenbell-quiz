@@ -460,10 +460,13 @@
 
   // ── 세션 ──
   let S = null;
+  let inQuizHistory = false;   // 퀴즈 시작 때 history.pushState 를 했는지
   function startSession(questions) {
     if (!questions.length) return;
     questions = questions.map(makeView);
     S = { queue: [...questions], total: questions.length, views: {}, cleared: new Set(), first: {}, missed: new Set(), cur: null, done: false, verdict: null };
+    // 휴대폰·브라우저의 '뒤로' 버튼을 눌러도 바로 나가지 않도록 기록을 하나 쌓아 둠
+    if (!inQuizHistory) { try { history.pushState({ hgb: "quiz" }, ""); inQuizHistory = true; } catch {} }
     show("quiz");
     nextQuestion();
   }
@@ -713,12 +716,29 @@
   $("startBtn").onclick = () => startSession(pickQuestions(pool(), settings.count));
   $("reviewBtn").onclick = () => startSession(shuffle(Q.filter(q => progress[q.id]?.wrongNote)));
   $("againBtn").onclick = () => startSession(shuffle([...S.missed].map(id => QMAP[id])));
-  $("homeBtn").onclick = () => { S = null; show("home"); renderHome(); };
-  $("quitBtn").onclick = () => {
-    if (S.cleared.size === 0 || confirm("그만할까요? 지금까지 푼 기록은 저장돼요.")) {
-      stopTimer(); hideSheet(); S = null; show("home"); renderHome();
+  // ── 나가기 (X 버튼 / 뒤로 버튼) ──
+  const QUIT_MSG = "문제 풀이를 끝낼까요?\n지금까지 푼 기록은 저장돼요.";
+  const quizOpen = () => S && !$("quiz").hidden;
+  function goHome() {
+    stopTimer(); hideSheet(); S = null; show("home"); renderHome();
+  }
+  // 퀴즈를 시작할 때 쌓아 둔 기록을 정리하고 처음 화면으로
+  function leaveToHome() {
+    if (inQuizHistory) { inQuizHistory = false; S = null; history.back(); }   // popstate에서 goHome
+    else goHome();
+  }
+  $("homeBtn").onclick = leaveToHome;
+  $("quitBtn").onclick = () => { if (confirm(QUIT_MSG)) leaveToHome(); };
+  window.addEventListener("popstate", () => {
+    if (quizOpen()) {
+      if (confirm(QUIT_MSG)) { inQuizHistory = false; goHome(); }
+      else { try { history.pushState({ hgb: "quiz" }, ""); } catch {} }   // 취소하면 계속 풀기
+    } else {
+      inQuizHistory = false; goHome();
     }
-  };
+  });
+  // 새로 고침하거나 창을 닫을 때도 한 번 확인
+  window.addEventListener("beforeunload", e => { if (quizOpen()) { e.preventDefault(); e.returnValue = ""; } });
   $("resetBtn").onclick = () => {
     if (confirm("학습 기록(익힌 문제, 오답 노트)을 모두 지울까요?")) { progress = {}; saveProgress(); renderHome(); }
   };
