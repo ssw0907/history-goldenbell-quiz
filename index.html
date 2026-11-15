@@ -95,6 +95,10 @@
   .bar { flex: 1; height: 12px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
   .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .35s ease; }
   .counter { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 48px; text-align: right; }
+  .tally { display: flex; gap: 6px; flex: none; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tally span { padding: 3px 8px; border-radius: 99px; white-space: nowrap; }
+  .tally .ok { background: var(--good-soft); color: var(--good); }
+  .tally .ng { background: var(--bad-soft); color: var(--bad); }
   .card { background: var(--surface); border-radius: 22px; padding: 22px 20px; box-shadow: var(--shadow); margin-bottom: 16px; animation: pop .25s ease; }
   @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -240,6 +244,10 @@
     <div class="bar"><i id="barFill"></i></div>
     <div id="counter" class="counter">0/0</div>
   </div>
+  <div class="tally" style="margin:-8px 0 14px; justify-content:flex-end">
+    <span class="ok">맞음 <b id="okCount">0</b></span>
+    <span class="ng">틀림 <b id="ngCount">0</b></span>
+  </div>
   <div id="card" class="card">
     <div id="tags" class="tags"></div>
     <figure id="qFig" class="qfig" hidden><img id="qImg" alt=""><figcaption id="qCap"></figcaption></figure>
@@ -258,7 +266,7 @@
   </div>
   <div class="result-grid">
     <div class="stat"><b id="rFirst">0</b><span>한 번에 맞힘</span></div>
-    <div class="stat"><b id="rRetry">0</b><span>다시 풀어 맞힘</span></div>
+    <div class="stat"><b id="rRetry">0</b><span>틀린 문제</span></div>
     <div class="stat"><b id="rTotal">0</b><span>푼 문제</span></div>
   </div>
   <section class="panel">
@@ -412,6 +420,10 @@
   function updateBar() {
     $("barFill").style.width = (S.cleared.size / S.total * 100) + "%";
     $("counter").textContent = `${S.cleared.size}/${S.total}`;
+    // 맞음: 처음 풀 때 맞힌 문제 수, 틀림: 한 번이라도 틀린 문제 수 (다시 풀어 맞혀도 틀림으로 남음)
+    const firsts = Object.values(S.first);
+    $("okCount").textContent = firsts.filter(Boolean).length;
+    $("ngCount").textContent = S.missed.size;
   }
 
   function renderQuestion() {
