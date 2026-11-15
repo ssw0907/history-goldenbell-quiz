@@ -499,6 +499,7 @@
     addTag(TYPE_LABEL[q.type] || "", "type");
     if (UNIT[q.unit]) addTag(`${q.unit} ${UNIT[q.unit].name}`);
     if (q.page) addTag(`교과서 ${q.page}쪽`);
+    if ((q.explain || "").includes("노트 필기")) addTag("노트 필기");
     if (S.missed.has(q.id)) addTag("다시 도전", "retry");
     // 그림 문제: image(그림 파일 경로) + caption(그림 아래 설명, 선택)
     $("qFig").hidden = !q.image;
